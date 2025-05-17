@@ -1,0 +1,9 @@
+#######################################################UBUNTU SERVER v22####################################################################
+
+v4CPU
+32GB RAM
+500GB Disk
+
+
+sudo apt update
+sudo apt install python3 python3-pip
