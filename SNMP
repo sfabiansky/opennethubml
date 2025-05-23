@@ -1,3 +1,64 @@
 sudo apt update
 sudo apt install snmp snmp-mibs-downloader
 pip3 install pysnmp pandas streamlit scikit-learn
+
+
+
+Script py
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+from datetime import datetime
+from pysnmp.hlapi import *
+from sklearn.linear_model import LinearRegression
+
+# Configuración SNMP
+IP_EQUIPO = "192.168.1.1"  # Cambia por la IP de tu switch/router
+OID_CPU = "1.3.6.1.4.1.9.2.1.57.0"  # OID Cisco 5-sec CPU (ajusta según equipo)
+COMMUNITY = "public"
+
+# Función para consultar SNMP
+def get_snmp(ip, oid, community="public"):
+    result = getCmd(SnmpEngine(),
+                    CommunityData(community, mpModel=0),
+                    UdpTransportTarget((ip, 161), timeout=1, retries=1),
+                    ContextData(),
+                    ObjectType(ObjectIdentity(oid)))
+    for (errInd, errStat, errIdx, varBinds) in result:
+        if errInd or errStat:
+            return None
+        for varBind in varBinds:
+            return float(varBind[1])
+
+# Predicción con regresión lineal
+def predecir(data):
+    X = np.arange(len(data)).reshape(-1, 1)
+    y = np.array(data).reshape(-1, 1)
+    modelo = LinearRegression().fit(X, y)
+    return float(modelo.predict([[len(data)]]))
+
+# Dashboard
+st.title("Dashboard SNMP - Uso de CPU")
+
+# Simulación de datos históricos en tiempo real (puedes guardar en archivo o BD)
+valores_cpu = []
+timestamps = []
+
+for _ in range(10):  # 10 muestras para demo
+    val = get_snmp(IP_EQUIPO, OID_CPU, COMMUNITY)
+    if val is not None:
+        valores_cpu.append(val)
+        timestamps.append(datetime.now())
+    else:
+        valores_cpu.append(np.nan)
+        timestamps.append(datetime.now())
+
+# Mostrar gráfico
+df = pd.DataFrame({"CPU %": valores_cpu}, index=timestamps)
+st.line_chart(df)
+
+# Mostrar predicción
+if len(valores_cpu) > 2:
+    prediccion = predecir(valores_cpu)
+    st.metric("Predicción siguiente minuto", f"{prediccion:.2f}%")
