@@ -1,0 +1,15 @@
++--------------------+       SNMP        +-------------------+
+| Servidor Ubuntu    |<----------------->| Equipos de Red    |
+| (IA + Monitor SNMP)|                  | (Switch, Router...)|
++--------------------+                   +-------------------+
+        |
+        v
++--------------------+
+| Procesamiento ML   | ← pandas + scikit-learn
+| Predicciones       |
++--------------------+
+        |
+        v
++----------------------+
+| Dashboard (Streamlit)|
++----------------------+
